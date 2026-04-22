@@ -1,0 +1,12 @@
+# macOS
+.DS_Store
+.localized
+
+# Obsidian — игнорим только нестабильные состояния, настройки остаются
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
+.obsidian/cache
+.trash/
+
+# Scratchpad
+*.swp
