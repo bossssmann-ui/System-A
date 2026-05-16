@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200" role="img" aria-labelledby="ps-mark-title ps-mark-desc">
+  <title id="ps-mark-title">Pacific Star — упрощённая метка (Mark v2)</title>
+  <desc id="ps-mark-desc">Шестилучевая метка ориентирования в кольце. Облегчённая обводка stroke 8 для прямых лучей и кольца, stroke 5 для диагоналей. Утверждена Романом 12.05.2026. Используется для email-подписи, аватаров, малых UI-применений. Монохром Stamp Ink #1F2A35.</desc>
+  <circle cx="100" cy="100" r="82" fill="none" stroke="#1F2A35" stroke-width="8"/>
+  <g transform="translate(100 100)" stroke="#1F2A35" stroke-linecap="butt" fill="none">
+    <line x1="-74" y1="0" x2="74" y2="0" stroke-width="8"/>
+    <line x1="0" y1="-74" x2="0" y2="74" stroke-width="8"/>
+    <line x1="-40" y1="-40" x2="40" y2="40" stroke-width="5"/>
+    <line x1="-40" y1="40" x2="40" y2="-40" stroke-width="5"/>
+  </g>
+</svg>

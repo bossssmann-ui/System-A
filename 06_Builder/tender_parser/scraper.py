@@ -1,8 +1,10 @@
 """
 Логика скрейпинга zakupki.gov.ru с использованием Playwright.
+Включает синхронный парсинг HTML без браузера.
 """
 import logging
-import time
+import re
+import html
 from typing import List, Dict, Any, Optional
 
 try:
@@ -37,6 +39,32 @@ from filters import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+def _clean_text(text: Optional[str]) -> Optional[str]:
+    """
+    Очищает текст от HTML entities и лишних пробелов.
+
+    Args:
+        text: Исходный текст
+
+    Returns:
+        Очищенный текст или None
+    """
+    if not text:
+        return None
+
+    # Декодируем HTML entities
+    text = html.unescape(text)
+
+    # Заменяем неразрывные пробелы на обычные
+    text = text.replace("\u00a0", " ")
+    text = text.replace("\u2009", " ")
+
+    # Удаляем лишние пробелы и переносы строк
+    text = re.sub(r'\s+', ' ', text).strip()
+
+    return text if text else None
 
 
 class ZakupkiScraper:
@@ -141,7 +169,7 @@ class ZakupkiScraper:
 
     async def _parse_results(self) -> List[Dict[str, Any]]:
         """
-        Парсит результаты поиска со страницы.
+        Парсит результаты поиска со страницы (результаты поиска).
 
         Returns:
             Список найденных тендеров
@@ -153,16 +181,8 @@ class ZakupkiScraper:
             content = await self.page_instance.content()
             soup = BeautifulSoup(content, "html.parser")
 
-            # Примечание: селекторы зависят от структуры закупки.gov.ru
-            # Здесь используются примерные селекторы, требуется уточнение
-
-            # Ищем таблицу результатов или список тендеров
-            # Типичная структура: <tr> с классом, содержащим информацию о тендере
-            result_rows = soup.find_all("tr", class_=lambda x: x and "register" in (x or "").lower())
-
-            if not result_rows:
-                # Альтернативный поиск
-                result_rows = soup.find_all("div", class_=lambda x: x and "search-result" in (x or "").lower())
+            # Селектор: div.search-registry-entry-block > div.registry-entry__form
+            result_rows = soup.find_all("div", class_="registry-entry__form")
 
             logger.info(f"Найдено потенциальных строк результатов: {len(result_rows)}")
 
@@ -182,33 +202,117 @@ class ZakupkiScraper:
 
         return tenders
 
-    def _extract_tender_from_row(self, row) -> Optional[Dict[str, Any]]:
+    def parse_html_file(self, file_path: str) -> List[Dict[str, Any]]:
         """
-        Извлекает информацию о тендере из одной строки результатов.
+        Синхронный парс HTML файла (сохраненной страницы) без использования браузера.
+        Используется для офлайн-тестирования и когда Playwright недоступен или заблокирован.
 
         Args:
-            row: BeautifulSoup элемент строки
+            file_path: Путь к HTML файлу
+
+        Returns:
+            Список найденных тендеров
+        """
+        tenders: List[Dict[str, Any]] = []
+
+        try:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                html_content = f.read()
+
+            soup = BeautifulSoup(html_content, "html.parser")
+
+            # Ищем все карточки тендеров (div.registry-entry__form)
+            result_rows = soup.find_all("div", class_="registry-entry__form")
+
+            logger.info(f"[{file_path}] Найдено потенциальных строк результатов: {len(result_rows)}")
+
+            for row_idx, row in enumerate(result_rows[:self.limit]):
+                try:
+                    tender = self._extract_tender_from_row(row)
+                    if tender:
+                        tenders.append(tender)
+                        logger.info(f"  [{row_idx+1}] ID: {tender['id']}, Title: {tender['title'][:40]}...")
+                except Exception as e:
+                    logger.warning(f"Ошибка парсинга строки {row_idx}: {e}")
+                    continue
+
+            logger.info(f"[{file_path}] Успешно распарсено тендеров: {len(tenders)}")
+
+        except FileNotFoundError:
+            logger.error(f"Файл не найден: {file_path}")
+        except Exception as e:
+            logger.error(f"Ошибка парсинга файла {file_path}: {e}")
+
+        return tenders
+
+    def _extract_tender_from_row(self, row) -> Optional[Dict[str, Any]]:
+        """
+        Извлекает информацию о тендере из одной строки результатов (div с классом registry-entry__form).
+        Реальные селекторы для zakupki.gov.ru.
+
+        Args:
+            row: BeautifulSoup элемент (div.registry-entry__form)
 
         Returns:
             Словарь с данными тендера или None
         """
         try:
-            # Примечание: требуется анализ HTML структуры закупки.gov.ru
-            # Здесь используются примерные селекторы
-
-            # Попытка найти ID (реестровый номер)
-            id_elem = row.find("a", href=lambda x: x and "/order/" in x)
+            # 1. РЕЕСТРОВЫЙ НОМЕР (ID)
+            # Селектор: div.registry-entry__header-mid__number > a > text()
+            id_elem = row.find("div", class_="registry-entry__header-mid__number")
             if not id_elem:
+                logger.debug("Не найден элемент с ID тендера (registry-entry__header-mid__number)")
                 return None
 
-            tender_id = id_elem.text.strip()
-            link = id_elem.get("href", "")
-            if not link.startswith("http"):
-                link = f"https://www.zakupki.gov.ru{link}"
+            tender_id = id_elem.get_text(separator=' ', strip=True)
+            # Убираем '№' если есть
+            tender_id = tender_id.replace("№", "").strip()
 
-            # Заголовок
-            title_elem = row.find("span", class_=lambda x: x and "title" in (x or "").lower())
-            title = title_elem.text.strip() if title_elem else "Неизвестно"
+            if not tender_id or len(tender_id) < 10:
+                logger.debug(f"ID слишком короткий или не найден: '{tender_id}'")
+                return None
+
+            # Получаем ссылку из элемента ID
+            id_link = id_elem.find("a")
+            link = id_link.get("href", "") if id_link else ""
+            if not link.startswith("http"):
+                link = f"https://zakupki.gov.ru{link}" if link else ""
+
+            logger.debug(f"✓ ID найден: {tender_id}")
+
+            # 2. ЗАКОН (44-ФЗ или 223-ФЗ)
+            # Селектор: div.registry-entry__header-top__title > text()[1]
+            law = "44-ФЗ"  # по умолчанию
+            law_elem = row.find("div", class_="registry-entry__header-top__title")
+            if law_elem:
+                law_text = law_elem.get_text(separator=' ', strip=True)
+                if "223" in law_text:
+                    law = "223-ФЗ"
+                logger.debug(f"✓ Закон найден: {law}")
+
+            # 3. ЭТАП ЗАКУПКИ (Подача заявок, Работа комиссии и т.д.)
+            # Селектор: div.registry-entry__header-mid__title > text()
+            stage = None
+            stage_elem = row.find("div", class_="registry-entry__header-mid__title")
+            if stage_elem:
+                stage = stage_elem.get_text(separator=' ', strip=True)
+                logger.debug(f"✓ Этап найден: {stage}")
+
+            # 4. ОБЪЕКТ ЗАКУПКИ (Наименование)
+            # Селектор: div.registry-entry__body > div.registry-entry__body-block[1] > div.registry-entry__body-value
+            description = None
+            body = row.find("div", class_="registry-entry__body")
+            if body:
+                body_blocks = body.find_all("div", class_="registry-entry__body-block")
+                if body_blocks:
+                    first_block = body_blocks[0]
+                    desc_elem = first_block.find("div", class_="registry-entry__body-value")
+                    if desc_elem:
+                        description = _clean_text(desc_elem.get_text(separator=' ', strip=True))
+                        logger.debug(f"✓ Описание найдено: {description[:50]}...")
+
+            # Если нет описания, используем как название
+            title = description or "Неизвестный тендер"
             title = normalize_title(title)
 
             # Проверка стоп-фильтра
@@ -216,34 +320,65 @@ class ZakupkiScraper:
                 logger.debug(f"Тендер {tender_id} отфильтрован (стоп-слово)")
                 return None
 
-            # Попытка найти другие поля
-            cells = row.find_all("td") if hasattr(row, "find_all") else [row]
+            # 5. ЗАКАЗЧИК
+            # Селектор: div.registry-entry__body-href > a > text()
+            # Может быть как "Заказчик", так и "Организация, осуществляющая размещение"
+            customer = None
+            if body:
+                body_blocks = body.find_all("div", class_="registry-entry__body-block")
+                for block in body_blocks:
+                    title_elem = block.find("div", class_="registry-entry__body-title")
+                    if title_elem:
+                        title_text = title_elem.get_text(separator=' ', strip=True)
+                        # Ищем либо "Заказчик" либо "Организация, осуществляющая размещение"
+                        if "Заказчик" in title_text or "размещение" in title_text.lower():
+                            href_elem = block.find("div", class_="registry-entry__body-href")
+                            if href_elem:
+                                customer_link = href_elem.find("a")
+                                if customer_link:
+                                    customer = _clean_text(customer_link.get_text(separator=' ', strip=True))
+                                    logger.debug(f"✓ Заказчик найден: {customer[:40]}...")
+                            break
 
-            # НМЦ (сумма)
-            amount_elem = None
-            for cell in cells:
-                if "руб" in cell.text.lower() or any(c.isdigit() for c in cell.text):
-                    amount_elem = cell
-                    break
-
+            # 6. НМЦ (НАЧАЛЬНАЯ ЦЕНА)
+            # Селектор: div.price-block__value
             amount = None
-            if amount_elem:
-                amount = normalize_amount(amount_elem.text)
-                if amount and amount < MIN_NMC_RUB:
-                    logger.debug(f"Тендер {tender_id}: сумма {amount} < {MIN_NMC_RUB}")
-                    return None
+            right_block = row.find("div", class_="registry-entry__right-block")
+            if right_block:
+                price_block = right_block.find("div", class_="price-block")
+                if price_block:
+                    price_value = price_block.find("div", class_="price-block__value")
+                    if price_value:
+                        amount_str = price_value.get_text(strip=True)
+                        amount = normalize_amount(amount_str)
+                        logger.debug(f"✓ Сумма найдена: {amount} руб")
 
-            # Регион, заказчик, deadline — требуют дополнительного анализа структуры
-            region = "Россия"  # По умолчанию
-            customer = "Неизвестно"
+                        if amount and amount < MIN_NMC_RUB:
+                            logger.debug(f"Тендер {tender_id}: сумма {amount} < {MIN_NMC_RUB}")
+                            return None
+
+            # 7. DEADLINE (ОКОНЧАНИЕ ПОДАЧИ ЗАЯВОК)
+            # Селектор: div.data-block > div.data-block__value (последний с датой)
             deadline = None
-            law = "44-ФЗ"  # По умолчанию
-            description = None
+            if right_block:
+                data_block = right_block.find("div", class_="data-block")
+                if data_block:
+                    data_values = data_block.find_all("div", class_="data-block__value")
+                    if data_values:
+                        # Последний data-block__value обычно это "Окончание подачи заявок"
+                        deadline = data_values[-1].get_text(separator=' ', strip=True)
+                        deadline = normalize_deadline(deadline)
+                        logger.debug(f"✓ Deadline найден: {deadline}")
+
+            # 8. РЕГИОН
+            # На странице выдачи региона может и не быть, попытаемся извлечь из заказчика или оставим None
+            region = None
 
             tender = {
                 "id": tender_id,
                 "title": title,
                 "law": law,
+                "stage": stage,
                 "customer": customer,
                 "amount": amount,
                 "region": region,

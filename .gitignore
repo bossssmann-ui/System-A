@@ -10,3 +10,30 @@
 
 # Scratchpad
 *.swp
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Node
+node_modules/
+
+# Env / secrets
+.env
+.env.local
+*.pem
+
+# Editor
+.vscode/
+.idea/
+
+# Logs
+*.log

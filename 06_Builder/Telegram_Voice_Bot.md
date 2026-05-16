@@ -1,3 +1,12 @@
+---
+aliases:
+  - Telegram-бот
+  - @Boss_SystemA_bot
+tags:
+  - зона/билдер
+  - проект/бот
+---
+
 # Telegram Voice Bot → Obsidian Inbox
 
 > Спека для Builder Agent. Проект: бот, принимающий голосовые/текст/фото от собственника и складывающий в vault.
@@ -58,3 +67,12 @@
 - MVP: 6–10 часов разработки.
 - V2: +5–8 часов.
 - Стоимость запуска: ~$5/мес.
+
+---
+
+<!-- AUTO-LINK -->
+**См. также:** [[Карта системы]] | [[Pinned Facts|Зафиксированные факты]] | [[Multi_Agent_Architecture|Архитектура]]
+
+<!-- AUTO-ZONE-START -->
+**Соседи по зоне:** [[Carrier_Lookup_Service]] | [[Mobile_Capture_Plan]] | [[Tender_Parser]] | [[VPS_Analysis]]
+<!-- AUTO-ZONE-END -->

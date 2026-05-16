@@ -1,3 +1,10 @@
+---
+aliases:
+  - Выбор VPS
+tags:
+  - зона/билдер
+---
+
 # Анализ VPS под парсер тендеров
 
 > Анализ на 27.04.26. Цены меняются, перед заказом сверять на сайтах провайдеров.
@@ -95,3 +102,12 @@
 ## История
 
 - 27.04.26 — анализ создан Claude в фоне.
+
+---
+
+<!-- AUTO-LINK -->
+**См. также:** [[Карта системы]] | [[Pinned Facts|Зафиксированные факты]] | [[Multi_Agent_Architecture|Архитектура]]
+
+<!-- AUTO-ZONE-START -->
+**Соседи по зоне:** [[Carrier_Lookup_Service]] | [[Mobile_Capture_Plan]] | [[Telegram_Voice_Bot]] | [[Tender_Parser]]
+<!-- AUTO-ZONE-END -->

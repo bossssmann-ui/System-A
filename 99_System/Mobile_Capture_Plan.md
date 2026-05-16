@@ -1,3 +1,11 @@
+---
+aliases:
+  - План мобильного капчура
+tags:
+  - зона/система
+  - зона/билдер
+---
+
 # План мобильного капчура — голос/текст → Obsidian
 
 > Личная память собственника — главное узкое место. Писать руками со смартфона неудобно. Цель: голос в Telegram → расшифровка → автоматическая запись в `90_Inbox/` vault.
@@ -73,3 +81,12 @@ iPhone → Telegram (@myinbox_bot)
 1. **Сегодня–завтра (Уровень 0+1):** настраиваем Obsidian + iCloud на Mac и iPhone. С этого момента иметь vault + капчур на ходу (iOS dictation).
 2. **Эта или следующая неделя:** решаем вилку A/B/C и мигрируем vault если нужно.
 3. **1–2 недели после миграции:** Builder Agent собирает Telegram-бот. Спека — в `06_Builder/Telegram_Voice_Bot.md`.
+
+---
+
+<!-- AUTO-LINK -->
+**См. также:** [[Карта системы]] | [[Pinned Facts|Зафиксированные факты]] | [[Multi_Agent_Architecture|Архитектура]]
+
+<!-- AUTO-ZONE-START -->
+**Соседи по зоне:** [[Carrier_Lookup_Service]] | [[Telegram_Voice_Bot]] | [[Tender_Parser]] | [[VPS_Analysis]]
+<!-- AUTO-ZONE-END -->

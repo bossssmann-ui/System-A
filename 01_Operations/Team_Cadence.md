@@ -1,3 +1,12 @@
+---
+aliases:
+  - Ритм работы команды
+tags:
+  - зона/операции
+  - зона/команда
+  - тип/sop
+---
+
 # Ритм команды (Operations)
 
 > Как собственник общается с операционной командой. Правило: собственник говорит с РОПом, РОП говорит с логистами. Прямой контакт с логистами — только по явному эскалейту или по желанию собственника, но не как норма.
@@ -50,3 +59,12 @@
 - `01_Operations/Dispatch_Daily.md` — ежедневные снимки парка.
 - `01_Operations/Incidents_Log.md` — журнал инцидентов.
 - `30_Decisions/` — решения, которые были приняты в 1-on-1.
+
+---
+
+<!-- AUTO-LINK -->
+**См. также:** [[Карта системы]] | [[Pinned Facts|Зафиксированные факты]] | [[Multi_Agent_Architecture|Архитектура]]
+
+<!-- AUTO-ZONE-START -->
+**Соседи по зоне:** [[Carrier_Audit_Checklist]] | [[Dispatcher_Bonus_Scheme]] | [[Dispatcher_Escalation_Map]] | [[Dispatcher_Job_Description]] | [[Dispatcher_Onboarding]] | [[Dispatcher_Welcome_Doc]] | [[First_Meeting_With_Tatyana]] | [[Interview_2026-04-22]] | [[Models_Map]] | [[Rop_Management]]
+<!-- AUTO-ZONE-END -->

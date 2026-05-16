@@ -1,3 +1,10 @@
+---
+aliases:
+  - Setup Guide — GitHub
+tags:
+  - зона/система
+---
+
 # Установка: GitHub private repo + Obsidian + Obsidian Git
 
 > Пошаговая инструкция. Делается один раз, ~45–60 минут. Не требует быть программистом. Все действия через мышь, кроме одного копирования команды.
@@ -100,3 +107,12 @@
 - **"Push отклонён"** → у тебя на Mac и в GitHub разные начальные коммиты. Решение: в GitHub Desktop → Repository → Pull → затем Push.
 - **Obsidian Git не видит репу** → проверь, что в Obsidian открыта папка, в которой реально есть скрытая `.git/`.
 - **Конфликты при одновременном редактировании с iPhone и Mac** → пока не актуально (iPhone в схеме позже). Когда появится — Obsidian Git сам поймает и покажет.
+
+---
+
+<!-- AUTO-LINK -->
+**См. также:** [[Карта системы]] | [[Pinned Facts|Зафиксированные факты]] | [[Multi_Agent_Architecture|Архитектура]]
+
+<!-- AUTO-ZONE-START -->
+**Соседи по зоне:** [[Assistant_Brief]] | [[Discovery_Roadmap]] | [[Multi_Agent_Architecture]] | [[Pinned Facts]]
+<!-- AUTO-ZONE-END -->

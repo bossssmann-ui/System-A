@@ -157,3 +157,42 @@ class TenderDB:
         except sqlite3.Error as e:
             logger.error(f"Ошибка при подсчёте тендеров: {e}")
             raise
+
+    def delete_all(self) -> None:
+        """Удаляет все тендеры из БД (для тестирования)."""
+        sql = "DELETE FROM tenders"
+        try:
+            with sqlite3.connect(self.db_path) as conn:
+                cursor = conn.cursor()
+                cursor.execute(sql)
+                conn.commit()
+                logger.info(f"Удалены все тендеры из БД")
+        except sqlite3.Error as e:
+            logger.error(f"Ошибка при удалении тендеров: {e}")
+            raise
+
+    def insert_tender(self, tender: Dict[str, Any]) -> bool:
+        """Вставляет новый тендер (альтернатив upsert для тестов)."""
+        return self.upsert_tender(tender)
+
+    def get_all_tenders(self) -> List[Dict[str, Any]]:
+        """Возвращает все тендеры из БД."""
+        sql = "SELECT id, title, law, customer, amount, region, deadline, link, description FROM tenders"
+        try:
+            with sqlite3.connect(self.db_path) as conn:
+                conn.row_factory = sqlite3.Row
+                cursor = conn.cursor()
+                cursor.execute(sql)
+                rows = cursor.fetchall()
+                return [dict(row) for row in rows]
+        except sqlite3.Error as e:
+            logger.error(f"Ошибка при чтении из БД: {e}")
+            raise
+
+    def close(self) -> None:
+        """Закрывает соединение (для совместимости)."""
+        pass
+
+
+# Алиас для совместимости
+TenderDatabase = TenderDB

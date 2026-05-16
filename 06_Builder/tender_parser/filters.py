@@ -2,6 +2,8 @@
 Фильтры и нормализация данных для тендеров.
 """
 import logging
+import re
+import html
 from typing import Optional
 from config import STOP_KEYWORDS
 
@@ -74,7 +76,10 @@ def normalize_deadline(deadline_str: Optional[str]) -> Optional[str]:
 
 def normalize_title(title: str) -> str:
     """
-    Нормализует заголовок (убирает лишние пробелы).
+    Нормализует заголовок:
+    - Декодирует HTML entities (&quot;, &nbsp;, и т.д.)
+    - Убирает лишние пробелы
+    - Удаляет переносы строк
 
     Args:
         title: Заголовок тендера
@@ -82,4 +87,14 @@ def normalize_title(title: str) -> str:
     Returns:
         Очищенный заголовок
     """
-    return " ".join(title.split())
+    # Декодируем HTML entities
+    title = html.unescape(title)
+
+    # Заменяем неразрывные пробелы на обычные
+    title = title.replace("\u00a0", " ")
+    title = title.replace("\u2009", " ")
+
+    # Удаляем лишние пробелы и переносы строк
+    title = re.sub(r'\s+', ' ', title).strip()
+
+    return title

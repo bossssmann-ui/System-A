@@ -1,3 +1,12 @@
+---
+aliases:
+  - Должностная инструкция диспетчера
+  - Зоны диспетчера
+tags:
+  - зона/операции
+  - тип/sop
+---
+
 # Должностная инструкция диспетчера (Модели A + A+)
 
 > Документ для Татьяны. Краткая версия — на 1 страницу. Вручается в первый день вместе с Welcome-doc.
@@ -114,3 +123,12 @@
 
 - Диспетчер: Татьяна Владимировна _________________ дата ____________
 - Собственник: Роман _________________ дата ____________
+
+---
+
+<!-- AUTO-LINK -->
+**См. также:** [[Карта системы]] | [[Pinned Facts|Зафиксированные факты]] | [[Multi_Agent_Architecture|Архитектура]]
+
+<!-- AUTO-ZONE-START -->
+**Соседи по зоне:** [[Carrier_Audit_Checklist]] | [[Dispatcher_Bonus_Scheme]] | [[Dispatcher_Escalation_Map]] | [[Dispatcher_Onboarding]] | [[Dispatcher_Welcome_Doc]] | [[First_Meeting_With_Tatyana]] | [[Team_Cadence]]
+<!-- AUTO-ZONE-END -->
