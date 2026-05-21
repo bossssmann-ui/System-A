@@ -36,9 +36,32 @@ status: active
 - Полные UI-флоу (формы заявок, FSM-кнопки апрува, kanban с DnD, admin-страницы) — placeholders, доделываются в Phase 1.
 - GitGuardian на ветке PR ругался на фейковый JWT в тесте (false positive); squash-merge почистил историю.
 
-## Phase 1 — Recruitment Core 🔜 NEXT
+## Phase 1 — Recruitment Core 🔄 IN PROGRESS
 
 Подфазы по [[HR_System_Roadmap]]: 1A HH.ru ingestion · 1B заявки+воронка (полные флоу) · 1C AI-скоринг · 1D тесты+прокторинг · 1E мессенджер · 1F транскрибация · 1G careers page.
+
+### Phase 1B — Core recruiting flows ✅ DONE (2026-05-21)
+
+**PR:** [#4 Phase 1B: core recruiting flows](https://github.com/bossssmann-ui/hr-system/pull/4) · merged by bossssmann-ui · squash · 5 commits · 28 файлов · +3191/−256 · issue [#3](https://github.com/bossssmann-ui/hr-system/issues/3)
+
+**Что вошло на `master`:**
+
+- **Backend routes (`/api/...`):** org-units (POST/GET), requisitions (POST/GET/GET:id/PATCH:id/transition), vacancies (GET/GET:id/PATCH:id/publish), candidates (POST с дедупом/GET/GET:id), applications (POST/GET/GET:id/PATCH:id/stage), admin (users, audit-events). Паттерн `route → zValidator → requireRole → service → Prisma → DTO`.
+- **FSM энфорсится по-настоящему:** `canTransition()` в роутах requisitions + applications → HTTP 422 при отказе.
+- **Авто-вакансия:** `vacancy.upsert` при `approved` (идемпотентно).
+- **Дедуп кандидатов:** existing record + `deduped:true` при совпадении email/phone.
+- **Stage-move:** аппендит `ApplicationStageEvent` в одной транзакции.
+- **Audit:** каждый мутирующий роут пишет AuditEvent.
+- **Web UI:** реальные страницы вместо placeholder'ов — заявки (list/create/detail с FSM-кнопками по ролям), вакансии, кандидаты, applications **Kanban на нативном HTML5 DnD**, admin (users + audit-log).
+- **Contracts:** Zod-схемы в `packages/contracts` — единый источник для backend+web.
+- **Тесты:** 44 backend-интеграционных + RLS cross-tenant на новые таблицы + Playwright smoke (полный журней под засеянным owner'ом).
+- **e2e инфра:** Vite `/api` proxy, postgres-сервис + seed owner в `validate`-джобе, `docs/TESTING.md` обновлён.
+
+**Ревью:** прошло через субагента (сверка с acceptance-критериями), вердикт MERGE WITH NOTES. Незаблокирующие хвосты: `ApplicationDetailPage` — placeholder с `TODO(phase-1c)`; у вакансий только publish-toggle без generic-edit.
+
+### Phase 1A — HH.ru ingestion 🔜 NEXT
+
+Парсинг резюме/откликов с HH.ru в базу кандидатов. Наполнение воронки реальными данными. Требует HH API-доступа (кабинет работодателя).
 
 ---
 
