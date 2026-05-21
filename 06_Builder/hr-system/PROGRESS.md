@@ -59,10 +59,27 @@ status: active
 
 **Ревью:** прошло через субагента (сверка с acceptance-критериями), вердикт MERGE WITH NOTES. Незаблокирующие хвосты: `ApplicationDetailPage` — placeholder с `TODO(phase-1c)`; у вакансий только publish-toggle без generic-edit.
 
-### Phase 1A — HH.ru ingestion 🔜 NEXT
+### Phase 1A — HH.ru negotiations sync ✅ DONE (2026-05-21)
 
-Парсинг резюме/откликов с HH.ru в базу кандидатов. Наполнение воронки реальными данными. Требует HH API-доступа (кабинет работодателя).
+**PR:** [#6 Phase 1A: HH negotiations sync](https://github.com/bossssmann-ui/hr-system/pull/6) · merged by bossssmann-ui · issue [#5](https://github.com/bossssmann-ui/hr-system/issues/5)
 
+**Что вошло на `master` (выключено feature-flag'ом `HH_INTEGRATION_ENABLED=false` до подключения реального HH):**
+
+- Стратегия: синхронизируем **только отклики (negotiations) на свои вакансии**, НЕ платную базу резюме (дёшево + чисто по ToS/152-ФЗ).
+- Миграции: `Vacancy.hh_vacancy_id` (unique), таблицы `hh_connections` (токены **зашифрованы AES-256-GCM**, `crypto.ts`), `hh_sync_cursors`; RLS tenant-scoped + admin-gated.
+- `HhClient` (`backend/src/integrations/hh/`): инъектируемый HTTP-транспорт (тесты на фикстурах, без сети), лимитер 8 rps, exponential 429-backoff, host-guard `isHhApiUrl`.
+- Sync-воркер: negotiation → `Candidate` (`source=hh_ru`) + `Application`, идемпотентно по `hh_negotiation_id`, переиспользует дедуп 1B, пишет AuditEvent `hh.sync.candidate_imported`.
+- OAuth-роуты `/api/integrations/hh/*` (authorize-url, callback, status, vacancy link, sync), все `requireRole('owner','hr_admin')` + feature-flag; `client_id/secret` из env.
+- Admin-страница `/admin/integrations/hh`: connect, link vacancy, manual sync, status.
+- 152-ФЗ: `consent_context` на импортированных кандидатах (основание — кандидат сам откликнулся).
+
+**Ревью:** через субагента, вердикт MERGE WITH NOTES — все 10 критериев выполнены, утечки в платный resume-search НЕТ, шифрование токенов реальное. Незаблокирующие хвосты: в `consent_context` нет явной строки «152-ФЗ» (написано legal basis).
+
+**Для боевого включения (шаги Романа в HH, позже):** завести OAuth-приложение на dev.hh.ru (`HH_CLIENT_ID`/`HH_CLIENT_SECRET`), задать `HH_TOKEN_ENCRYPTION_KEY`, выставить `HH_INTEGRATION_ENABLED=true`, разместить вакансию на HH и слинковать её `hh_vacancy_id`.
+
+### Phase 1C — AI-скоринг резюме 🔜 NEXT
+
+Подключить AI-оценку кандидатов (relevance, soft-skills, red-flags) на уже поступающих в воронку резюме.
 ---
 
 ## Вспомогательный инструментарий
