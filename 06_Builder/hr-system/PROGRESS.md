@@ -113,6 +113,21 @@ status: active
 
 **Для боевого включения:** ASR-провайдер + ключ (Yandex SpeechKit `ASR_API_KEY`/`ASR_FOLDER_ID` или self-hosted Whisper), `TRANSCRIPTION_ENABLED=true`; LLM-ключ общий с 1C.
 
+### Phase 1E — мессенджер с кандидатом ✅ DONE (2026-05-22)
+
+**PR:** [#12 Phase 1E](https://github.com/bossssmann-ui/hr-system/pull/12) · merged by bossssmann-ui · issue [#11](https://github.com/bossssmann-ui/hr-system/issues/11)
+
+**Что вошло на `master` (каналы за feature-flag'ами):**
+
+- Единый тред: `Conversation` + `Message` (channel/direction/status) + `MessageTemplate`; RLS; дедуп входящих по `(channel, external_id)`.
+- Channel-адаптеры: `InAppChannel`, `HhChatChannel` (переиспользует HH-клиент), `TelegramChannel` (вебхук + Bot API), `EmailChannel` (исходящий SMTP, nodemailer). Все инъектируемы, мокаются.
+- Async-отправка через очередь (queued→sent|failed); AI-черновики через 1C LLM-seam (всегда draft, без авто-отправки; PII не уходит).
+- Шаблоны с переменными; Web `/inbox` + `/inbox/:id`.
+
+**Открытый хвост:** Quiet Hours были захардкожены на 09:00 UTC — оформлен fix [Issue #13](https://github.com/bossssmann-ui/hr-system/issues/13): конфигурируемое окно, дефолт активной отправки **23:00→15:00 UTC** (09:00 Владивосток → 18:00 Москва), обработка перехода через полночь. В работе у Copilot.
+
+**Для боевого включения:** Telegram bot token + webhook; SMTP-креды; `Candidate.externalIds.telegram_chat_id` для роутинга.
+
 ### Phase 1D — тесты с прокторингом + автогенерация вопросов 🔜 NEXT
 
 Прокторинг тестов (Trust Score: paste-detection, focus-loss, видео-фрейминг) + AI-генерация именных вопросов для интервью под вакансию и резюме.
