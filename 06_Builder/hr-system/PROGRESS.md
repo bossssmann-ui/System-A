@@ -36,7 +36,7 @@ status: active
 - Полные UI-флоу (формы заявок, FSM-кнопки апрува, kanban с DnD, admin-страницы) — placeholders, доделываются в Phase 1.
 - GitGuardian на ветке PR ругался на фейковый JWT в тесте (false positive); squash-merge почистил историю.
 
-## Phase 1 — Recruitment Core 🔄 IN PROGRESS
+## Phase 1 — Recruitment Core ✅ DONE (все подфазы 1A–1G)
 
 Подфазы по [[HR_System_Roadmap]]: 1A HH.ru ingestion · 1B заявки+воронка (полные флоу) · 1C AI-скоринг · 1D тесты+прокторинг · 1E мессенджер · 1F транскрибация · 1G careers page.
 
@@ -143,11 +143,31 @@ status: active
 
 **Для боевого включения:** `CAREERS_PAGE_ENABLED=true`, опубликовать вакансию, шарить ссылку.
 
-### Phase 1D — тесты с прокторингом + автогенерация вопросов 🔜 NEXT (последняя в Phase 1)
+### Phase 1D — прокторинг + автогенерация вопросов ✅ DONE (2026-05-22)
 
-Прокторинг тестов (Trust Score: paste-detection, focus-loss, видео-фрейминг) + AI-генерация именных вопросов для интервью под вакансию и резюме.
+**PR:** [#18 Phase 1D](https://github.com/bossssmann-ui/hr-system/pull/18) · merged by bossssmann-ui · issue [#17](https://github.com/bossssmann-ui/hr-system/issues/17)
 
-> Хвост закрыт: [#14 Quiet Hours fix](https://github.com/bossssmann-ui/hr-system/pull/14) merged 2026-05-22 (конфликты разрулены, активное окно 09:00 ВЛ → 18:00 МСК).
+**Что вошло на `master` (за флагами `ASSESSMENTS_ENABLED`, `PROCTORING_WEBCAM_ENABLED`, оба off):**
+
+- Модели `AssessmentTemplate/Question/Session/Answer`; `Application.ai_interview_questions` + `trust_flagged`; RLS, `invite_token` unique.
+- **Trust Score**: pure `computeTrustScore(signals, weights)` — считается **только на сервере** (клиентский score игнорируется), сигналы paste/focus/keystroke, веса из env; низкий скор → advisory `trust_flagged`, **без авто-реджекта**. Калибровочный `POST /api/assessments/trust-preview`.
+- Tokenized take-test флоу `/api/public/assessment/:token` (GET/consent/start/submit), tenant резолвится сервером; consent обязателен; вебкам за отдельным флагом+согласием.
+- AI-генерация именных вопросов через 1C LLM-seam (без контактных PII), Zod-валидация, retry; опц. AI-проверка открытых ответов; audit `application.questions_generated`.
+- Web: candidate `/assessment/:token` (consent → таймер → submit) + recruiter-панель (генерация вопросов, invite, Trust Score breakdown).
+
+**Конфликты** при merge разрулены Copilot (взял master-baseline + переналожил 1D), re-verify гарантий + typecheck/test green.
+
+---
+
+## 🎯 Phase 1 — Recruitment Core ЗАКРЫТА (2026-05-22)
+
+Полный цикл «добычи персонала» построен и на `master`:
+
+**Вход:** HH negotiations sync (1A) + публичная careers-страница (1G) → **воронка** заявок/вакансий/кандидатов с FSM, RLS, аудитом (1B) → **AI-скоринг** резюме (1C) → **прокторинг-тесты** с Trust Score + автогенерация вопросов (1D) → **интервью**: транскрипт + протокол + черновик оффера с quote-links (1F) → **мультиканальная переписка** (in-app/email/Telegram/HH) с Quiet Hours ВЛ→МСК (1E).
+
+Всё внешнее (HH, LLM, ASR, email, Telegram, careers, assessments) — за feature-флагами, выключено до боевых ключей. Инструмент claude-tdd готов отдельно.
+
+**Дальше (Phase 2+):** мульти-источники (СберПодбор/Avito/Работа.ру), офферы+DocuSeal, онбординг, lifecycle, LMS, performance, finance, analytics, partner, compliance, mobile — по [[HR_System_Roadmap]].
 
 ---
 
