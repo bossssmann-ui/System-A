@@ -95,6 +95,24 @@ status: active
 
 **Для боевого включения:** дать `LLM_SCORING_API_KEY` (Anthropic), `AI_SCORING_ENABLED=true`, опц. `LLM_SCORING_MODEL`.
 
+### Phase 1F — транскрибация интервью → протокол → черновик оффера ✅ DONE (2026-05-22)
+
+**PR:** [#10 Phase 1F](https://github.com/bossssmann-ui/hr-system/pull/10) · merged by bossssmann-ui · issue [#9](https://github.com/bossssmann-ui/hr-system/issues/9)
+
+**Что вошло на `master` (выключено `TRANSCRIPTION_ENABLED=false` до ASR-ключа):**
+
+- Модель `Interview` (consent_recorded, статус-FSM created→transcribing→transcribed→protocol_ready→failed), JSONB transcript/protocol/offer_draft; RLS (ENABLE+FORCE) на таблице.
+- ASR-абстракция `TranscriptionProvider` + `YandexSpeechKitProvider` (инъектируемый HTTP, без живого ASR в CI); seam под self-hosted Whisper; feature-flag.
+- Очередь transcribe→protocol→offer_draft, идемпотентно, graceful; AuditEvents.
+- Протокол через LLM-seam (1C), Zod-валидация, **quote-links** {segment_index, quote}.
+- **Offer draft — детерминированный маппинг** из agreed_terms (не LLM, аудируемо).
+- 152-ФЗ: consent-гейт блокирует транскрипцию без согласия; запись/транскрипт по основанию согласия.
+- Web: InterviewPanel (upload, consent, статус, transcript, протокол, offer-draft с «Show source»).
+
+**Ревью:** пост-фактум через **Gemini** (по директиве — не Sonnet). Offer детерминирован ✅, consent-гейт держит ✅ (skip-return), RLS на БД ✅. Gemini флагнул app-level отсутствие tenant-фильтра — ложная тревога (БД-RLS закрывает). Мелочь на потом: добавить app-level tenantId-фильтр для defense-in-depth.
+
+**Для боевого включения:** ASR-провайдер + ключ (Yandex SpeechKit `ASR_API_KEY`/`ASR_FOLDER_ID` или self-hosted Whisper), `TRANSCRIPTION_ENABLED=true`; LLM-ключ общий с 1C.
+
 ### Phase 1D — тесты с прокторингом + автогенерация вопросов 🔜 NEXT
 
 Прокторинг тестов (Trust Score: paste-detection, focus-loss, видео-фрейминг) + AI-генерация именных вопросов для интервью под вакансию и резюме.
