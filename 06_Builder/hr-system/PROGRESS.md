@@ -124,7 +124,7 @@ status: active
 - Async-отправка через очередь (queued→sent|failed); AI-черновики через 1C LLM-seam (всегда draft, без авто-отправки; PII не уходит).
 - Шаблоны с переменными; Web `/inbox` + `/inbox/:id`.
 
-**Открытый хвост:** Quiet Hours были захардкожены на 09:00 UTC — оформлен fix [Issue #13](https://github.com/bossssmann-ui/hr-system/issues/13): конфигурируемое окно, дефолт активной отправки **23:00→15:00 UTC** (09:00 Владивосток → 18:00 Москва), обработка перехода через полночь. В работе у Copilot.
+**Quiet Hours fix ✅** ([PR #14](https://github.com/bossssmann-ui/hr-system/pull/14) merged 2026-05-22): конфигурируемое окно, дефолт активной отправки **23:00→15:00 UTC** (09:00 Владивосток → 18:00 Москва), обработка перехода через полночь; manual-отправки не глушатся. 119/119 unit-тестов, CodeQL 0 alerts.
 
 **Для боевого включения:** Telegram bot token + webhook; SMTP-креды; `Candidate.externalIds.telegram_chat_id` для роутинга.
 
@@ -147,7 +147,7 @@ status: active
 
 Прокторинг тестов (Trust Score: paste-detection, focus-loss, видео-фрейминг) + AI-генерация именных вопросов для интервью под вакансию и резюме.
 
-> Открытый хвост: [#14 Quiet Hours fix](https://github.com/bossssmann-ui/hr-system/pull/14) — был конфликт с master, Copilot разруливает; после merge #16 master снова сдвинулся, возможно нужен повторный rebase.
+> Хвост закрыт: [#14 Quiet Hours fix](https://github.com/bossssmann-ui/hr-system/pull/14) merged 2026-05-22 (конфликты разрулены, активное окно 09:00 ВЛ → 18:00 МСК).
 
 ---
 
