@@ -77,9 +77,28 @@ status: active
 
 **Для боевого включения (шаги Романа в HH, позже):** завести OAuth-приложение на dev.hh.ru (`HH_CLIENT_ID`/`HH_CLIENT_SECRET`), задать `HH_TOKEN_ENCRYPTION_KEY`, выставить `HH_INTEGRATION_ENABLED=true`, разместить вакансию на HH и слинковать её `hh_vacancy_id`.
 
-### Phase 1C — AI-скоринг резюме 🔜 NEXT
+### Phase 1C — AI-скоринг резюме ✅ DONE (2026-05-22)
 
-Подключить AI-оценку кандидатов (relevance, soft-skills, red-flags) на уже поступающих в воронку резюме.
+**PR:** [#8 Phase 1C: AI candidate scoring](https://github.com/bossssmann-ui/hr-system/pull/8) · merged by bossssmann-ui · issue [#7](https://github.com/bossssmann-ui/hr-system/issues/7) · 34 файла · +1484/−13
+
+**Что вошло на `master` (выключено feature-flag'ом `AI_SCORING_ENABLED=false` до LLM-ключа):**
+
+- Провайдер-абстракция `ScoringProvider` + `AnthropicScoringProvider` (инъектируемый клиент, без живого LLM в CI); провайдер/модель/ключ из env. Seam под Gemini оставлен.
+- Zod-схема `ScoringResult` (relevance_score, strengths/gaps, soft-skills, **red_flags + anti_fraud_signals**, values_fit, interview_focus); malformed JSON → retry раз → graceful `status:"failed"`, воронка не падает.
+- Async-скоринг при создании Application (ручное + HH-импорт), ручной `POST /:id/rescore`, идемпотентность по `input_hash`.
+- Human-in-the-loop: `POST /:id/score-feedback` (agree/disagree + note). **Скоринг advisory — НЕ двигает стадию и не реджектит** (смена стадии только через FSM-роут).
+- **152-ФЗ:** контактные PII (имя/email/телефон) **не уходят в LLM** — `buildScoringInput` собирает только job-relevant поля, есть тест на это.
+- **Анти-байас** в системном промпте (защищённые характеристики).
+- Web: бейдж AI-скора на канбане + достроена `/applications/:id` с панелью скоринга и фидбеком.
+
+**Ревью:** через субагента, вердикт MERGE WITH NOTES — все 8 критериев, PII strip + анти-байас + отсутствие авто-решений подтверждены. Незаблокирующее: плоское именование метаданных в схеме.
+
+**Для боевого включения:** дать `LLM_SCORING_API_KEY` (Anthropic), `AI_SCORING_ENABLED=true`, опц. `LLM_SCORING_MODEL`.
+
+### Phase 1D — тесты с прокторингом + автогенерация вопросов 🔜 NEXT
+
+Прокторинг тестов (Trust Score: paste-detection, focus-loss, видео-фрейминг) + AI-генерация именных вопросов для интервью под вакансию и резюме.
+
 ---
 
 ## Вспомогательный инструментарий
