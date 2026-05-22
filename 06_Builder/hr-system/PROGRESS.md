@@ -128,9 +128,26 @@ status: active
 
 **Для боевого включения:** Telegram bot token + webhook; SMTP-креды; `Candidate.externalIds.telegram_chat_id` для роутинга.
 
-### Phase 1D — тесты с прокторингом + автогенерация вопросов 🔜 NEXT
+### Phase 1G — careers-страница ✅ DONE (2026-05-22)
+
+**PR:** [#16 Phase 1G](https://github.com/bossssmann-ui/hr-system/pull/16) · merged by bossssmann-ui · issue [#15](https://github.com/bossssmann-ui/hr-system/issues/15)
+
+**Что вошло на `master` (за флагом `CAREERS_PAGE_ENABLED`):**
+
+- Публичные (без авторизации) эндпоинты `/api/public/vacancies`, `/:slug`, `POST /:slug/apply`; `Vacancy.slug` (уникальный, авто из title).
+- Публичные web-роуты `/careers` + `/careers/:slug` (работают залогаут), apply-форма, OG-метатеги для превью ссылок.
+- Apply → Candidate(`source=careers_page`)+Application(`new`) в воронку, дедуп, AI-скоринг если включён.
+- Свой бесплатный канал откликов, 0 зависимости от HH/платных ключей.
+
+**Ревью:** через **Gemini** (целевое, публичная security-часть). Вердикт OK: отдаёт только `is_published`, tenant сервером (`resolveBootstrapTenant`, не из запроса), consent обязателен (422), honeypot+rate-limit, дедуп. Утечек внутренних полей нет.
+
+**Для боевого включения:** `CAREERS_PAGE_ENABLED=true`, опубликовать вакансию, шарить ссылку.
+
+### Phase 1D — тесты с прокторингом + автогенерация вопросов 🔜 NEXT (последняя в Phase 1)
 
 Прокторинг тестов (Trust Score: paste-detection, focus-loss, видео-фрейминг) + AI-генерация именных вопросов для интервью под вакансию и резюме.
+
+> Открытый хвост: [#14 Quiet Hours fix](https://github.com/bossssmann-ui/hr-system/pull/14) — был конфликт с master, Copilot разруливает; после merge #16 master снова сдвинулся, возможно нужен повторный rebase.
 
 ---
 
